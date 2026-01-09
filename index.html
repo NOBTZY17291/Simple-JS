@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="made by dm">
+    <meta name="robots" content="Activity 11-ICT">
+    <title>Simple JS!</title>
+    <style>
+        body { margin: 0; padding: 0; background: #111;}
+        p {
+          color: white;
+        }
+        h1 {
+          margin-top: 0;
+          background: black;
+          color: white;
+          pointer-events: none;
+          text-align: center;
+        }
+        #curtain {
+         margin-top: 10px;
+         display: flex;
+         justify-self: center;
+          border-radius: 12px;
+        width: 80%;
+        }
+        input[type="button"] {
+         background: transparent;
+         border: 2px solid;
+         border-radius: 8px;
+         padding: 12px 24px;
+         color: #0ff;
+         font-weight: bold;
+         text-transform: uppercase;
+         letter-spacing: 1px;
+         transition: 0.3s;
+         text-shadow: 0 0 5px currentColor;
+         position: relative;
+         left: 20vw;
+        }
+
+        input[type="button"]:nth-child(4) {
+         border-color: #0ff;
+         box-shadow: 
+        0 0 10px #0ff, inset 0 0 10px rgba(0, 255, 255, 0.2);
+        }
+
+       input[type="button"]:nth-child(5) {
+         border-color: #f0f;
+         color: #f0f;
+         box-shadow; 0 0 10px #f0f, inset 0 0 10px rgba(255, 0, 255, 0.2);
+       }
+
+        input[type="button"]:hover {
+          background: transparent;
+          text-shadow: none;
+          transform: scale(1.05);
+        }
+        .lyrics {
+          border: none 1px solid;
+          width: 250px;
+          height: 250px;
+          display: flex;
+          justify-self: center;
+          position: relative;
+          margin-top: 140px;
+        }
+        #leter {
+          color: #0ff;
+          text-shadow: 
+          0 0 5px #0ff,
+          0 0 10px #0ff,
+          0 0 20px #0ff,
+          0 0 40px #0ff,
+          0 0 80px #0ff;
+          font-family: sans-serif;
+          text-transform: lowercase;
+          text-align: justify;
+          background: transparent;
+        }
+        img {
+          position: absolute;
+          top: 11vh;
+          left: 20vw;
+          width: 200px;
+          opacity: 0;
+          transition: 2s;
+          border-radius: 12px;
+          pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+     <h1>Simple Js!</h1>
+     <p><em>Note:</em> simple open and close javascript activity.</p>
+      <video id="curtain" poster="close.jpg">
+      <source src="" type="video/mp4">
+      </video>
+      <input type="button" value="Open" id="bt1" onclick="opp()">
+      <input type="button" value="Close" id="bt2" onclick="cloo()">
+      <div class="lyrics">
+        <h1 id="leter"></h1>
+      </div>
+      <img id="abatu" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwpGNXC1NSVc8Vdo8YDlSDD6YaOopfeJwC5eXiF_1H9w&s=10">
+      <audio src="music.mp4" id="mu1"></audio>
+</body>
+<script>
+Vidd = document.getElementById("curtain");
+music = document.getElementById("mu1");
+abt = document.getElementById("abatu");
+
+function opp(){
+console.log("success");
+Vidd.src = "curtain.mp4";
+Vidd.load;
+Vidd.play();
+};
+function cloo(){
+printLyrics();
+Vidd.src = "curtain-close.mp4";
+Vidd.load;
+Vidd.play();
+music.play();
+abt.style.opacity = "1";
+abt.style.opacityDuration = "2s"
+};
+
+function printLyrics() {
+    const lyrics = [
+        ["Ahhhhhhhh", 100, 2300],
+        ["pero wag mag alala", 150, 2300],
+        ["di na kita gagambalain", 120, 1900],
+        ["alam ko namang ngayong", 150, 900],
+        ["may kapiling kanang iba", 120, 5000],
+        ["Tanging hiling ko", 150, 900],
+        ["sayo na tuwing umuulan", 200, 1500],
+        ["maalala mo sanang may nag mamahal sayo", 150, 2000],
+    ];
+
+    let res = document.getElementById("leter");
+    res.innerHTML = "";
+
+    async function displayLyrics() {
+        for (const [line, charDelay, lineDelay] of lyrics) {
+            res.innerHTML = "";
+            
+            for (const char of line) {
+                res.innerHTML += char;
+                res.scrollLeft = res.scrollWidth;
+                await new Promise(resolve => setTimeout(resolve, charDelay));
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, lineDelay));
+        }
+        res.innerHTML = "";
+        abt.style.opacity = "0";
+    }
+    
+    return displayLyrics();
+}
+</script>
+</html>
