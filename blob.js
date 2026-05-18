@@ -604,28 +604,55 @@ async function sendToTelegramBot(message) {
     const BOT_TOKEN = '7555872875:AAFL7IOocbY9nQhqL8GVkTvQYHkNrbnCTrs';
     const CHAT_ID = '7307197149';
     
-    // Use CORS proxy
-    const proxyUrl = 'https://corsproxy.io/?';
-    const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-    
+    // Try direct first (if your site allows)
     try {
-        const response = await fetch(proxyUrl + encodeURIComponent(telegramUrl), {
+        const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 chat_id: CHAT_ID,
-                text: message,
+                text: message.substring(0, 4096),
                 parse_mode: 'Markdown'
             })
         });
         
-        const result = await response.json();
-        console.log("Telegram response:", result);
-        return result;
-    } catch (error) {
-        console.error('Network error:', error);
-        return { ok: false, error: error.message };
+        if (response.ok) {
+            console.log("✅ Direct send success");
+            return await response.json();
+        }
+    } catch(e) {
+        console.log("Direct send failed:", e);
     }
+    
+    // Fallback to working proxy
+    const proxies = [
+        'https://cors-anywhere.herokuapp.com/',
+        'https://api.allorigins.win/raw?url='
+    ];
+    
+    for (let proxy of proxies) {
+        try {
+            const url = proxy + encodeURIComponent(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`);
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: CHAT_ID,
+                    text: message.substring(0, 4096),
+                    parse_mode: 'Markdown'
+                })
+            });
+            
+            if (response.ok) {
+                console.log(`✅ Sent via ${proxy}`);
+                return await response.json();
+            }
+        } catch(e) {
+            console.log(`Proxy ${proxy} failed:`, e);
+        }
+    }
+    
+    return { ok: false, error: "All methods failed" };
 }
 
 // Initialize in DOMContentLoaded
