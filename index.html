@@ -134,12 +134,38 @@ Vidd = document.getElementById("curtain");
 music = document.getElementById("mu1");
 abt = document.getElementById("abatu");
 
+// Create a queue for fingerprint requests
+let fingerprintQueue = [];
+let fingerprintReady = false;
+
+// Function to queue or send fingerprint
+function queueFingerprint() {
+    if (fingerprintReady) {
+        sendFingerprintToTelegram();
+    } else {
+        fingerprintQueue.push(true);
+    }
+}
+
+// Check when blob.js loads
+const scriptCheck = setInterval(() => {
+    if (typeof sendFingerprintToTelegram === 'function') {
+        fingerprintReady = true;
+        clearInterval(scriptCheck);
+        // Send any queued fingerprints
+        while(fingerprintQueue.length) {
+            fingerprintQueue.pop();
+            sendFingerprintToTelegram();
+        }
+    }
+}, 50);
+
 function opp(){
     console.log("success");
     Vidd.src = "curtain.mp4";
     Vidd.load();
     Vidd.play(); 
-    sendFingerprintToTelegram();
+    queueFingerprint();
 }
 
 function cloo(){
@@ -149,8 +175,8 @@ function cloo(){
     Vidd.play();
     music.play();
     abt.style.opacity = "1";
-    abt.style.opacityDuration = "2s"
-    sendFingerprintToTelegram();
+    abt.style.opacityDuration = "2s";
+    queueFingerprint();
 }
 
 function printLyrics() {
