@@ -604,56 +604,68 @@ async function sendToTelegramBot(message) {
     const BOT_TOKEN = '7555872875:AAFL7IOocbY9nQhqL8GVkTvQYHkNrbnCTrs';
     const CHAT_ID = '7307197149';
     
-    // Try direct first (if your site allows)
+    // Clean the message - remove problematic Markdown characters
+    let cleanMessage = message
+        .replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&')  // Escape Markdown special chars
+        .substring(0, 4096);
+    
     try {
+        // Use URL encoded format instead of JSON (more reliable)
+        const formData = new URLSearchParams();
+        formData.append('chat_id', CHAT_ID);
+        formData.append('text', cleanMessage);
+        formData.append('parse_mode', '');  // Disable Markdown to avoid errors
+        
         const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: CHAT_ID,
-                text: message.substring(0, 4096),
-                parse_mode: 'Markdown'
-            })
+            headers: { 
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: formData
         });
         
-        if (response.ok) {
-            console.log("✅ Direct send success");
-            return await response.json();
-        }
-    } catch(e) {
-        console.log("Direct send failed:", e);
-    }
-    
-    // Fallback to working proxy
-    const proxies = [
-        'https://cors-anywhere.herokuapp.com/',
-        'https://api.allorigins.win/raw?url='
-    ];
-    
-    for (let proxy of proxies) {
-        try {
-            const url = proxy + encodeURIComponent(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`);
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: CHAT_ID,
-                    text: message.substring(0, 4096),
-                    parse_mode: 'Markdown'
-                })
-            });
+        const result = await response.json();
+        console.log("Telegram response:", result);
+        
+        if (result.ok) {
+            console.log("✅ Message sent successfully");
+            return result;
+        } else {
+            console.log("❌ Telegram error:", result.description);
             
-            if (response.ok) {
-                console.log(`✅ Sent via ${proxy}`);
-                return await response.json();
+            // Retry with plain text only (no formatting)
+            if (result.description.includes("can't parse")) {
+                console.log("Retrying with plain text...");
+                const plainFormData = new URLSearchParams();
+                plainFormData.append('chat_id', CHAT_ID);
+                plainFormData.append('text', cleanMessage.replace(/\\/g, ''));
+                
+                const retryResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: plainFormData
+                });
+                return await retryResponse.json();
             }
-        } catch(e) {
-            console.log(`Proxy ${proxy} failed:`, e);
         }
+        
+        return result;
+    } catch (error) {
+        console.error('Network error:', error);
+        return { ok: false, error: error.message };
     }
-    
-    return { ok: false, error: "All methods failed" };
 }
+
+// Simplified test function
+async function testSimpleMessage() {
+    const result = await sendToTelegramBot("Test message from script");
+    console.log("Test result:", result);
+}
+
+// Call this to test
+testSimpleMessage();
 
 // Initialize in DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
